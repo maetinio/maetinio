@@ -2,7 +2,9 @@
 <meta name="description" content="maetinio west — techno producer. 18 tracks out now on Spotify.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;600;700&family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" media="print" onload="this.media='all';this.onload=null"
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;600;700&family=JetBrains+Mono:wght@300;400;700&display=swap">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;600;700&family=JetBrains+Mono:wght@300;400;700&display=swap"></noscript>
 <style>
 /* ==========================================================================
    maetinio west — cyberpunk / sci-fi identity
@@ -16,7 +18,7 @@
   --line-2:    rgba(255,255,255,.06);
   --txt:       #e8ecf2;
   --txt-dim:   #8b95a6;
-  --txt-faint: #5a6373;
+  --txt-faint: #7a869c;   /* 5.51:1 auf --bg; #5a6373 lag bei 3.34:1 */
 
   --cyan:   #00f0ff;
   --mag:    #ff0080;
@@ -151,7 +153,7 @@ button,input,textarea{ font:inherit; color:inherit; }
   80%{transform:translate(3%,3%)} 100%{transform:translate(0,0)}
 }
 .fx-scan{
-  z-index:8001; opacity:.5;
+  z-index:8001; opacity:.35;
   background:repeating-linear-gradient(
     to bottom,
     rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px,
@@ -701,6 +703,8 @@ main{ position:relative; z-index:10; }
 }
 .form__status.ok{ color:var(--lime); }
 .form__status.bad{ color:var(--mag); }
+.form__status a{ color:var(--cyan); border-bottom:1px solid rgba(0,240,255,.4); }
+.form__status a:hover{ border-bottom-color:var(--cyan); }
 
 /* ==========================================================================
    FOOTER
@@ -821,7 +825,11 @@ main{ position:relative; z-index:10; }
 }
 
 .trk{
-  position:relative; display:flex; flex-direction:column;
+  position:relative;
+  min-width:0;
+}
+.trk__link{
+  display:flex; flex-direction:column;
   min-width:0;
 }
 .trk__art{
@@ -857,16 +865,16 @@ main{ position:relative; z-index:10; }
 .trk__ico svg{ width:100%; height:100%; fill:#1ed760;
   filter:drop-shadow(0 0 8px rgba(30,215,96,.75)); }
 
-.trk:hover .trk__art,.trk:focus-visible .trk__art{
+.trk:hover .trk__art,.trk__link:focus-visible .trk__art{
   border-color:var(--cyan);
   box-shadow:0 16px 44px -22px rgba(0,240,255,.75);
 }
-.trk:hover .trk__art img,.trk:focus-visible .trk__art img{
+.trk:hover .trk__art img,.trk__link:focus-visible .trk__art img{
   transform:scale(1.06);
   filter:grayscale(0) contrast(1.02) brightness(1.06);
 }
-.trk:hover .trk__veil,.trk:focus-visible .trk__veil{ opacity:.18; }
-.trk:hover .trk__ico,.trk:focus-visible .trk__ico{
+.trk:hover .trk__veil,.trk__link:focus-visible .trk__veil{ opacity:.18; }
+.trk:hover .trk__ico,.trk__link:focus-visible .trk__ico{
   opacity:1; transform:none;
 }
 
@@ -880,7 +888,7 @@ main{ position:relative; z-index:10; }
   transition:color .3s var(--ease);
   overflow-wrap:anywhere;
 }
-.trk:hover .trk__title,.trk:focus-visible .trk__title{ color:var(--cyan); }
+.trk:hover .trk__title,.trk__link:focus-visible .trk__title{ color:var(--cyan); }
 .trk__meta{
   display:flex; justify-content:space-between; gap:.4rem;
   margin-top:.2rem;
@@ -1299,7 +1307,7 @@ body.has-player{ padding-bottom:132px; }
         <span>root@maetinio-west:~/bio</span>
         <span class="term__blink">&#9679; rec</span>
       </div>
-      <pre class="term__body" id="termBody" aria-live="polite"></pre>
+      <pre class="term__body" id="termBody"></pre>
     </div>
 
     <div class="about__side">
@@ -1568,7 +1576,7 @@ body.has-player{ padding-bottom:132px; }
     [['','chain drive       2026-08-20']],
     [['','']],
     [['m','$ '],['k','cat ./links']],
-    [['k','open.spotify.com/artist/maetinio-west']]
+    [['k','open.spotify.com/artist/3ehJk7hm1490kHp0ksAbuB']]
   ];
 
   /* ======================================================================
@@ -1587,9 +1595,17 @@ body.has-player{ padding-bottom:132px; }
     ];
     var i = 0, p = 0, done = false;
 
+    // While the overlay covers the page, Tab used to walk straight past the
+    // skip button into the links behind it. Take the rest out of the tab order.
+    var shielded = ['#nav', 'main', '.foot', '#player']
+      .map(function (sel) { return $(sel); })
+      .filter(Boolean);
+    shielded.forEach(function (e) { e.inert = true; });
+
     function finish() {
       if (done) return;
       done = true;
+      shielded.forEach(function (e) { e.inert = false; });
       el.classList.add('is-done');
       document.body.classList.remove('is-locked');
       setTimeout(function () { el.remove(); start(); }, 750);
@@ -1983,41 +1999,45 @@ body.has-player{ padding-bottom:132px; }
       '</svg>';
 
     TRACKS.forEach(function (t, i) {
-      var a = document.createElement('a');
-      a.className = 'trk reveal';
-      a.dataset.id = t.id;
-      a.href = 'https://open.spotify.com/track/' + t.id;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.style.transitionDelay = ((i % 4) * 60 + Math.floor(i / 4) * 40) + 'ms';
-      a.innerHTML =
-        '<span class="trk__art">' +
-          '<img src="' + t.img + '" alt="" loading="lazy" ' +
-               'width="300" height="300" decoding="async">' +
-          '<span class="trk__veil" aria-hidden="true"></span>' +
-          '<span class="trk__ico" aria-hidden="true">' + GLYPH + '</span>' +
-          '<a class="trk__out" href="https://open.spotify.com/track/' + t.id + '"' +
-            ' target="_blank" rel="noopener noreferrer" tabindex="-1"' +
-            ' aria-label="Open ' + t.title + ' on Spotify">&#8599;</a>' +
-        '</span>' +
-        '<span class="trk__title">' + t.title + '</span>' +
-        '<span class="trk__meta"><span>' + t.date.slice(0, 7).replace('-', '.') + '</span>' +
-          '<span>' + t.len + '</span></span>';
-      // The corner arrow keeps its normal link behaviour.
-      $('.trk__out', a).addEventListener('click', function (e) {
-        e.stopPropagation();
-      });
+      var url = 'https://open.spotify.com/track/' + t.id;
 
-      a.addEventListener('click', function (e) {
-        // Modifier or middle clicks stay ordinary link clicks (new tab etc.),
-        // and if the embed is blocked we never intercept at all.
-        if (spotify.blocked || e.defaultPrevented) return;
+      // The tile is a container, not a link. An <a> inside an <a> is invalid
+      // (HTML Living Standard 4.5.1: no interactive descendant), and it made
+      // the tile announce "Open <title> on Spotify <title> ..." as one name.
+      // The corner arrow is now a sibling that only duplicates the same href,
+      // so it is hidden from assistive tech and left out of the tab order.
+      var el = document.createElement('div');
+      el.className = 'trk reveal';
+      el.dataset.id = t.id;
+      el.style.transitionDelay = ((i % 4) * 60 + Math.floor(i / 4) * 40) + 'ms';
+      el.innerHTML =
+        '<a class="trk__link" href="' + url + '" target="_blank" rel="noopener noreferrer">' +
+          '<span class="trk__art">' +
+            '<img src="' + t.img + '" alt="" loading="lazy" ' +
+                 'width="300" height="300" decoding="async">' +
+            '<span class="trk__veil" aria-hidden="true"></span>' +
+            '<span class="trk__ico" aria-hidden="true">' + GLYPH + '</span>' +
+          '</span>' +
+          '<span class="trk__title">' + t.title + '</span>' +
+          '<span class="trk__meta"><span>' + t.date.slice(0, 7).replace('-', '.') + '</span>' +
+            '<span>' + t.len + '</span></span>' +
+        '</a>' +
+        '<a class="trk__out" href="' + url + '" target="_blank" rel="noopener noreferrer"' +
+          ' tabindex="-1" aria-hidden="true">&#8599;</a>';
+
+      $('.trk__link', el).addEventListener('click', function (e) {
+        // Modifier or middle clicks stay ordinary link clicks (new tab etc.).
+        if (e.defaultPrevented) return;
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        // Embedding refused by the host: this click stays a plain link, but a
+        // panel opened before we found out would sit there naming the wrong
+        // track, so close it on the way out.
+        if (spotify.blocked) { closeTrack(); return; }
         e.preventDefault();
         openTrack(t);
       });
 
-      grid.appendChild(a);
+      grid.appendChild(el);
     });
   }
 
@@ -2131,7 +2151,7 @@ body.has-player{ padding-bottom:132px; }
 
     // A live level lifts the glow where analysis works; flat where it does not.
     var lvl = 0;
-    if (drops.current === t && drops.data) {
+    if (drops.current === t && drops.data && !t._noAnalyse) {
       drops.analyser.getByteFrequencyData(drops.data);
       var sum = 0;
       for (var q = 0; q < 30; q++) sum += drops.data[q];
@@ -2203,7 +2223,8 @@ body.has-player{ padding-bottom:132px; }
       drops.ctx.createMediaElementSource(t._audio).connect(drops.analyser);
     } catch (e) {
       // Cross-origin or file:// — the precomputed waveform carries the display.
-      drops.data = null;
+      // Only this track loses its live level; the others keep theirs.
+      t._noAnalyse = true;
     }
   }
 
@@ -2498,14 +2519,28 @@ body.has-player{ padding-bottom:132px; }
 
       setTimeout(function () {
         clearInterval(iv);
-        st.className = 'form__status ok';
-        st.textContent = '// channel open — your mail client takes over from here';
+        // The e-mail field is required and was validated — it has to travel
+        // with the message, otherwise the only return address is whatever the
+        // sender's mail client happens to put in the From header.
         var body = 'name: ' + $('#fName').value +
+                   '\ne-mail: ' + $('#fMail').value +
                    '\ndate: ' + ($('#fDate').value || 'tbc') +
                    '\n\n' + $('#fMsg').value;
-        window.location.href = 'mailto:' + MAIL +
+        var href = 'mailto:' + MAIL +
           '?subject=' + encodeURIComponent('booking request — ' + $('#fName').value) +
           '&body=' + encodeURIComponent(body);
+
+        // Nothing has been sent at this point: the draft is handed to whatever
+        // mail client the visitor has. With none registered, nothing visible
+        // happens — so offer the address instead of reporting success.
+        st.className = 'form__status ok';
+        st.textContent = '// draft handed to your mail client — nothing opened? ';
+        var link = document.createElement('a');
+        link.href = href;
+        link.textContent = MAIL;
+        st.appendChild(link);
+
+        window.location.href = href;
       }, 1100);
     });
   }
