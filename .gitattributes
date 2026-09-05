@@ -1,0 +1,4 @@
+# Die Seite ist eine einzelne Datei mit eingebetteten base64-Medien.
+# Ohne diesen Eintrag behandelt GitHub sie als generierte Datei und blendet
+# den Diff aus; die Aenderungen an Markup und Skript sollen sichtbar bleiben.
+index.html -linguist-generated
