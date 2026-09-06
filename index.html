@@ -2,7 +2,7 @@
 <meta name="description" content="maetinio west — techno producer. 18 tracks out now on Spotify.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" media="print" onload="this.media='all';this.onload=null"
+<link id="fontCss" rel="stylesheet" media="print" onload="this.media='all';this.onload=null"
       href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;600;700&family=JetBrains+Mono:wght@300;400;700&display=swap">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;600;700&family=JetBrains+Mono:wght@300;400;700&display=swap"></noscript>
 <style>
@@ -1453,6 +1453,15 @@ body.has-player{ padding-bottom:132px; }
   var $  = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* The font stylesheet is fetched with media="print" so it cannot block the
+     first paint; the link's own onload attribute swaps it to media="all".
+     Should a host ever refuse that inline handler, swap it here instead — by
+     window load the page has long since painted, so this cannot delay it. */
+  window.addEventListener('load', function () {
+    var fc = document.getElementById('fontCss');
+    if (fc && fc.media === 'print') fc.media = 'all';
+  });
   var lerp = function (a, b, t) { return a + (b - a) * t; };
   var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
 
