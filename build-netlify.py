@@ -21,11 +21,11 @@ SRC = pathlib.Path("index.html")
 OUT = pathlib.Path("dist")
 LANG = "en"
 
-DATA_URI = re.compile(r"data:(image/jpeg|audio/mpeg);base64,([A-Za-z0-9+/=]+)")
-ID_BEFORE = re.compile(r"id:'([^']+)'")
+DATA_URI = re.compile(r"data:(image/jpeg|audio/mpeg|video/mp4);base64,([A-Za-z0-9+/=]+)")
+ID_BEFORE = re.compile(r"id:\s*'([^']+)'")
 
-EXT = {"image/jpeg": "jpg", "audio/mpeg": "mp3"}
-SUB = {"image/jpeg": "covers", "audio/mpeg": "audio"}
+EXT = {"image/jpeg": "jpg", "audio/mpeg": "mp3", "video/mp4": "mp4"}
+SUB = {"image/jpeg": "covers", "audio/mpeg": "audio", "video/mp4": "video"}
 
 
 def main() -> int:
@@ -37,8 +37,8 @@ def main() -> int:
 
     if OUT.exists():
         shutil.rmtree(OUT)
-    (OUT / "assets" / "covers").mkdir(parents=True)
-    (OUT / "assets" / "audio").mkdir(parents=True)
+    for sub in ("covers", "audio", "video"):
+        (OUT / "assets" / sub).mkdir(parents=True)
 
     # id-Positionen einmal einsammeln, damit jedes Medium die zu ihm
     # gehoerende id findet, ohne den 7-MB-String erneut zu durchsuchen.
@@ -134,6 +134,7 @@ def main() -> int:
     print(f"  dist/index.html      {(OUT / 'index.html').stat().st_size:>9,} Bytes")
     print(f"  assets/covers        {len(list((OUT / 'assets' / 'covers').iterdir())):>9} Dateien")
     print(f"  assets/audio         {len(list((OUT / 'assets' / 'audio').iterdir())):>9} Dateien")
+    print(f"  assets/video         {len(list((OUT / 'assets' / 'video').iterdir())):>9} Dateien")
     print(f"  dist gesamt          {total:>9,} Bytes")
     print(f"  Quelle index.html    {SRC.stat().st_size:>9,} Bytes")
     return 0
